@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,6 +54,7 @@
     </style>
 </head>
 
+</head>
 <body>
     <h1>Дней без разговора о плойке:</h1>
     <div id="counter">0</div>
@@ -64,41 +64,53 @@
         const counter = document.getElementById("counter");
         const resetButton = document.getElementById("resetButton");
 
-        function getDaysDifference() {
-            const start_date = new Date("2023-12-20");
-            const now = new Date();
-
+        function getDaysDifference(date1, date2) {
             const one_day_ms = 1000 * 60 * 60 * 24;
-            const difference_ms = Math.abs(now - start_date);
+            const difference_ms = Math.abs(date2 - date1);
             const days_difference = Math.floor(difference_ms / one_day_ms);
 
-            return days_difference;
+            return days_difference || 0;
         }
 
         function updateCounter(days) {
             counter.textContent = days;
             localStorage.setItem("counter", days);
+            localStorage.setItem("lastUpdated", new Date().toISOString().slice(0, 10));
         }
 
         function getLastSavedCounter() {
             return localStorage.getItem("counter");
         }
 
+        function getLastUpdatedDate() {
+            return localStorage.getItem("lastUpdated");
+        }
+
         function resetCounter() {
-            updateCounter(getDaysDifference());
+            updateCounter(0);
+        }
+
+        function increaseCounterIfNeeded() {
+            const lastSavedCounter = getLastSavedCounter();
+            const lastUpdatedDate = getLastUpdatedDate();
+            const today = new Date().toISOString().slice(0, 10);
+
+            counter.textContent = lastSavedCounter || 0;
+
+            if (lastUpdatedDate) {
+                const daysSinceLastUpdate = getDaysDifference(new Date(lastUpdatedDate), new Date(today));
+                updateCounter(parseInt(counter.textContent) + daysSinceLastUpdate);
+            } else {
+                localStorage.setItem("lastUpdated", today);
+            }
         }
 
         // Инициализация
-        const lastSavedCounter = getLastSavedCounter();
-        if (lastSavedCounter !== null) {
-            counter.textContent = lastSavedCounter;
-        } else {
-            resetCounter();
-        }
+        increaseCounterIfNeeded();
 
         resetButton.addEventListener("click", resetCounter);
     </script>
+
+
 </body>
-
 </html>
-
